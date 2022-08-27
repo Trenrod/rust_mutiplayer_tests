@@ -1,0 +1,72 @@
+use futures_util::{SinkExt, StreamExt};
+use libs::messages::GameServerMessage;
+use serde_json;
+use tokio::sync::mpsc;
+use tokio_tungstenite::{connect_async, tungstenite::Message};
+
+pub struct ServerConnection {
+    pub server_endpoint: url::Url,
+}
+
+impl ServerConnection {
+    pub async fn connect(
+        &self,
+        mut receiver_channel: mpsc::Receiver<GameServerMessage>,
+        sender_channel: mpsc::Sender<GameServerMessage>,
+    ) {
+        // Connect to the WS server locally
+        let (socket, _) = connect_async(&self.server_endpoint).await.unwrap();
+        let (mut sender, mut receiver) = socket.split();
+
+        // Message from backend receiver thread. Forewards to gamelogic
+        let sender_channel_clone = sender_channel.clone();
+        tokio::spawn(async move {
+            loop {
+                if let Some(msg) = receiver.next().await {
+                    match msg {
+                        Ok(msg) => {
+                            if let Message::Binary(bin_msg) = msg {
+                                let server_message =
+                                    serde_json::from_slice::<GameServerMessage>(&bin_msg);
+                                if let Ok(server_message) = server_message {
+                                    match server_message {
+                                        GameServerMessage::Goodbye(user_id) => {
+                                            println!("Goodbye {}", user_id)
+                                        }
+                                        GameServerMessage::ServerUpdate(remote_user_data) => {
+                                            let clone_of_message = GameServerMessage::ServerUpdate(
+                                                remote_user_data.clone(),
+                                            );
+                                            let _ =
+                                                sender_channel_clone.send(clone_of_message).await;
+                                        }
+                                        GameServerMessage::Welcome(user_id) => {
+                                            println!("Welcome {}", user_id)
+                                        }
+                                        _ => (),
+                                    }
+                                }
+                            }
+                        }
+                        Err(_) => (),
+                    }
+                }
+            }
+        });
+
+        // Message from gamelogic thread. Forwards to backend
+        tokio::spawn(async move {
+            loop {
+                let msg = receiver_channel.recv().await.unwrap();
+                match msg {
+                    GameServerMessage::ClientUpdate(client_data_to_server_message) => {
+                        let data = serde_json::to_vec(&client_data_to_server_message).unwrap();
+                        let message = Message::Binary(data);
+                        sender.send(message).await.unwrap();
+                    }
+                    _ => (),
+                };
+            }
+        });
+    }
+}

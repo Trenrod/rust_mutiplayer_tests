@@ -1,0 +1,32 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "cppvsdbg",
+            "request": "launch",
+            "name": "Server-debug",
+            "args": [],
+            "env": {
+                "RUST_LOG": "debug"
+            },
+            "preLaunchTask": "rust_cargo_build_server",
+            "program": "${workspaceFolder}/target/debug/server.exe",
+            "cwd": "${workspaceFolder}/target/debug",
+        },
+        {
+            "type": "cppvsdbg",
+            "request": "launch",
+            "name": "Client-debug",
+            "args": [],
+            "env": {
+                "RUST_LOG": "debug"
+            },
+            "preLaunchTask": "rust_cargo_build_client",
+            "program": "${workspaceFolder}/target/debug/client.exe",
+            "cwd": "${workspaceFolder}/target/debug",
+        }
+    ]
+}

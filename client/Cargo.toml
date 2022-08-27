@@ -1,0 +1,22 @@
+[package]
+name = "client"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+libs = { path = "../libs" }
+warp = "0.3"
+tokio = { version = "1.20.1", features = ["full"] } # Async runtime
+tungstenite = "*"
+tokio-stream = "0.1.9"
+tokio-tungstenite = "*"
+futures-util = "0.3"
+log = "0.4" # Diagnostics logging
+pretty_env_logger = "0.4" # Std output logging
+glam = { version = "0.14", features = ["scalar-math", "serde"] } # Math functions
+serde = { version = "1.0", features = ["derive"] } # De-/serialize data
+url = "2.2"
+serde_json = "1.0"
+macroquad = "0.3.23"

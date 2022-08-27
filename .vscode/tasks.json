@@ -1,0 +1,31 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cargo",
+			"command": "build",
+			"problemMatcher": [
+				"$rustc"
+			],
+			"args": [
+				"--package",
+				"client"
+			],
+			"group": "build",
+			"label": "rust_cargo_build_client"
+		},
+		{
+			"type": "cargo",
+			"command": "build",
+			"problemMatcher": [
+				"$rustc"
+			],
+			"args": [
+				"--package",
+				"server"
+			],
+			"group": "build",
+			"label": "rust_cargo_build_server"
+		},
+	]
+}
